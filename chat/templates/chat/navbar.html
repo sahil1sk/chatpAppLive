@@ -1,0 +1,49 @@
+<style type="text/css">
+  .setColor{
+    background-color: rgba(0,0,0,0.4) !important;
+  }
+  #setLiColor{
+    color: white;
+    font-weight: 3px;
+  }
+</style>
+
+<nav class="navbar navbar-expand-lg navbar-light setColor mb-4">
+  <a class="navbar-brand" href="/" id='setLiColor'>QuickChat</a>
+  
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/chat/global" id='setLiColor'>Global<span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/chat/friends" id='setLiColor'>Friends<span class="sr-only">(current)</span></a>
+        </li>
+        {% if request.user.is_authenticated %}
+        
+        <li class="nav-item">
+          <a class="nav-link" href="/profile/" id='setLiColor'>{{request.user}}</a>
+        </li>
+        
+        <li class="nav-item">
+          <a class="nav-link" id='setLiColor' href="/logout">Logout</a>
+        </li>
+
+        {% else %}
+
+          <li class="nav-item">
+            <a class="nav-link" id='setLiColor' href="/login">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id='setLiColor' href="/register">Register</a>
+          </li>
+
+        {% endif %}
+        
+      </ul>
+  </div>
+</nav>

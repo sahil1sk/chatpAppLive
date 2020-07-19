@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+{% block content %}
+{% load static %}
+
+    {% include "chat/messageStyle.html" %}
+        
+    <div class="container-fluid h-100">
+        <div class="row justify-content-center h-100">
+            <div class="col-md-4 col-xl-3 chat">
+                <div class="card mb-sm-3 mb-md-0 contacts_card">
+                    <div class="card-header">
+                        <div class="input-group">
+                            <input type="text" id="searchVal" placeholder="Search..." name="searchBar" class="form-control search">
+                            <div class="input-group-prepend">
+                                <span id='searchOn' class="input-group-text search_btn"><i class="fa fa-search"></i></span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!--this is filled when there is search-->
+                    <div class="card-search">
+                        <ui id="searchList" class="contacts">
+                        </ui>
+                    </div>
+            
+                    {% if locationName == 'global' %}
+                        <div class="card-body contacts_body">
+                            <ui class="contacts">
+                                {% for object in userData%}
+                                    {% if request.user.id != object.id %}
+                                        {% if object.id == otherId %}
+                                            <li id="makePoint" class="active">
+                                        {% else %}
+                                            <li id='makePoint'>
+                                        {% endif %}        
+                                            <div class="d-flex bd-highlight">
+                                                <div class="img_cont">
+                                                    <img src={{object.profile.image.url}} class="rounded-circle user_img">
+                                                    <span class="online_icon"></span>
+                                                </div>
+                                                <div class="user_info">
+                                                    <span>{{object.username}}</span>
+                                                </div>
+                                                <span onclick="setfun({{object.id}})" style="margin-top: 6%; margin-left: auto; height: 50%"><i style="color: white; cursor: pointer;" class="fa fa-wechat"></i></span>
+                                            </div>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ui>
+                        </div>
+                    {% else %}
+                        <div class="card-body contacts_body">
+                            <ui class="contacts">
+                                {% for object in userData%}
+                                    {% if object.friendObj.id == otherId %}
+                                        <li id='makePoint' class="active">
+                                    {% else %}
+                                        <li id='makePoint'>
+                                    {% endif %}        
+                                        <div class="d-flex bd-highlight">
+                                            <div class="img_cont">
+                                                <img src={{object.friendObj.profile.image.url}} class="rounded-circle user_img">
+                                                <span class="online_icon"></span>
+                                            </div>
+                                            <div class="user_info">
+                                                <span style="cursor: pointer;" onclick="setfun({{object.friendObj.id}})">{{object.friendObj.username}}</span>
+                                                {% if objblock == True and object.friendObj.id == otherId %} <p>{{object.friendObj.username}} is blocked by you.</p> {% endif %}
+                                            </div>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ui>
+                        </div>
+                    {% endif %}
+
+                <div class="card-footer"></div>
+            
+            </div></div>
+            
+            <div class="col-md-8 col-xl-6 chat">
+                <div class="card">
+                    {% if not otherId == 00 %}
+                        <div class="card-header msg_head">
+                            <div class="d-flex bd-highlight">
+                                <div class="img_cont">
+                                    <img src={{ otherUser.profile.image.url }} class="rounded-circle user_img">
+                                    <span class="online_icon"></span>
+                                </div>
+                                <div class="user_info">
+                                    <span>Chat with {{ otherUser.username }}</span>
+                                </div>
+                            </div>
+                            {% if otherUser.id == otherId %}
+                                <span id="action_menu_btn"><i style="color: white;" class="fa fa-ellipsis-v"></i></span>
+                            {% endif %}
+                            <div class="action_menu" style="display: none">
+                                <ul>
+                                    <li onclick="actionFriend({{otherId}},'removefriend')"><i class="fa fa-trash"></i> Remove</li>
+                                    {% if objblock == True %}
+                                        <li onclick="actionFriend({{otherId}},'blockfriend')"><i class="fa fa-ban"></i> 
+                                        Unblock</li>
+                                    {% else %}
+                                        <li onclick="actionFriend({{otherId}},'blockfriend')"><i class="fa fa-ban"></i> 
+                                        Block</li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body msg_card_body" id="chat-log">
+                            {% if objblock == False %}
+                                {% for obj in messages %}
+                                    {% if obj.participant.username == request.user.username %}
+                                        <div class="d-flex justify-content-end mb-4">
+                                            <div class="msg_cotainer_send mb-4">
+                                                {{ obj.content }}
+                                                <span class="msg_time_send">{{ obj.timestamp.ctime }}</span>    
+                                            </div>
+                                            <div class="img_cont_msg">
+                                                <img src={{ obj.participant.profile.image.url }} class="rounded-circle user_img_msg">
+                                            </div>
+                                        </div>    
+                                    {% else %}
+                                        <div class="d-flex justify-content-start mb-4">
+                                            <div class="img_cont_msg mb-4">
+                                                <img src={{ obj.participant.profile.image.url }} class="rounded-circle user_img_msg">
+                                            </div>
+                                            <div class="msg_cotainer">
+                                                {{ obj.content }}
+                                                <span class="msg_time">{{ obj.timestamp.ctime }}</span>
+                                            </div>
+                                        </div> 
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <div class="card-footer">
+                            <div class="input-group">
+                                <textarea {% if objblock == True %} disabled="True" {% endif %} name="textarea" id="chat-message-input" class="form-control type_msg" placeholder="Type your message..."></textarea>
+                                <div class="input-group-append">
+                                    <span {% if objblock == True %} disabled="True" {% endif %} id="chat-message-submit" class="input-group-text send_btn"><i class="fa fa-location-arrow"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div style="text-align: center;">
+                            <img class="rounded-circle mt-4" style="height: 100%; width: 80%;" src="{% static 'connected.jpg' %}">
+                            <p style="color: white; font-size: 30px;"> Stay Connected </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{% static 'reconnecting-websocket.js' %}"></script>
+    <script type="text/javascript">
+
+        // getting the sounds
+        const notify = new Audio(`{% static 'notify.mp3' %}`);
+        const newMsgPlay = new Audio(`{% static 'newMsg.mp3' %}`);
+
+
+        // this function we used to create cookie
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        // getting the csrf token
+        const csrftoken = getCookie('csrftoken');
+        const locationName = `${{locationName}}`
+
+        // this function is used to remove or block the friend
+        function actionFriend(id, endPoint){
+            fetch(`/${endPoint}/${id}/`) 
+                .then(response => {
+                    if (response.ok) {
+                        return response
+                    }
+                    else { 
+                        var error = new Error('Error: '+ response.status + ': ' + response.statusText); 
+                        error.response = response; 
+                        throw error; 
+                    }
+                },         
+                error => {
+                    var errmess = new Error(error.message); 
+                    throw errmess;
+                })  
+                .then(response => response.json())  
+                .then(data => window.location.href='/chat/friends/') 
+                .catch(error => alert('There is an error '+error));          
+        }
+
+        // this is for showing block option when clicked
+        idIsthere = document.getElementById('action_menu_btn')
+        if(idIsthere){
+            document.querySelector('#action_menu_btn').onclick = function(e) {
+                var menu = document.querySelector('.action_menu')
+                if (menu.style.display === "none"){
+                    menu.style.display = "block";
+                }else{
+                    menu.style.display = "none";
+                }
+            }
+        }
+
+        // so here we getting the search value and getting the data
+        document.querySelector('#searchVal').focus();
+        document.querySelector('#searchVal').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#searchOn').click();
+            }
+        };
+
+        document.querySelector('#searchOn').onclick = function(e) {
+            const searchValue = document.querySelector('#searchVal');
+
+            if(searchValue.value !== ''){
+                fetch(`/search/${searchVal.value}/`,{
+                    method: 'POST', 
+                    headers: { 
+                        'Content-Type':'application/json',
+                        'X-CSRFToken': csrftoken,
+                    },
+                    body: JSON.stringify({"locationName":locationName}),
+                }) 
+                .then(response => {
+                    if (response.ok) {
+                        return response
+                    }
+                    else { 
+                        var error = new Error('Error: '+ response.status + ': ' + response.statusText); 
+                        error.response = response; 
+                        throw error; 
+                    }
+                },         
+                error => {
+                    var errmess = new Error(error.message); 
+                    throw errmess;
+                })  
+                .then(response => response.json())  
+                .then(data => setSearch(data)) 
+                .catch(error => alert('There is an error '+error)); 
+            }
+
+            // so here we calling the function to append the data in it
+            function setSearch(data){
+                const userId = {{ request.user.id }};
+                let dataIs = data.usrObj;
+                var finalData = '';
+                if(dataIs === '' || dataIs[0].id === userId){
+                    const idIs = document.getElementById('searchList');
+                    idIs.innerHTML = "<div style='text-align:center; color:white; font-size:18px; min-height:50px;'>No Result is there</div>"; 
+                }else{
+                    if(locationName === '$global'){
+                        for(i=0; i<dataIs.length; i++){
+                            if(userId !== dataIs[i].id){
+                                var data = "<li id='makePoint'>" + 
+                                                "<div class='d-flex bd-highlight'>" +
+                                                    "<div class='img_cont'>" +
+                                                        "<img src="+dataIs[i].image+" class='rounded-circle user_img'>" +
+                                                    "</div>" + 
+                                                    "<div class='user_info'>" +
+                                                        "<span>"+ dataIs[i].username +"</span>" +
+                                                    "</div>" +
+                                                    "<span onclick=setfun("+dataIs[i].id+") style='margin-top: 6%; margin-left: auto; height: 50%'><i style='color: white; cursor: pointer;' class='fa fa-wechat'></i></span>" +
+                                                "</div>" +
+                                            "</li>"  
+                                finalData += data;  
+                            }
+                        }
+                    }else{
+                        for(i=0; i<dataIs.length; i++){
+                            if(userId !== dataIs[i].friendData.id){
+                                var data = "<li id='makePoint'>" + 
+                                                "<div class='d-flex bd-highlight' onclick=setfun("+dataIs[i].friendData.id+")>" +
+                                                    "<div class='img_cont'>" +
+                                                        "<img src="+dataIs[i].friendData.image+" class='rounded-circle user_img'>" +
+                                                    "</div>" +
+                                                    "<div class='user_info'>" +
+                                                        "<span style='cursor:pointer;'>"+ dataIs[i].friendData.username +"</span>" +
+                                                    "</div>" +
+                                                "</div>" +
+                                            "</li>"  
+                                finalData += data;  
+                            }
+                        }
+                    }
+                    const idIs = document.getElementById('searchList');
+                    idIs.innerHTML = finalData; 
+                }
+            }
+
+        };
+
+
+        // this is fun go another person
+        function setfun(obj){
+            window.location.href = `/chat/${obj}/`;
+        }
+
+
+        var getId = document.getElementById('chat-message-input');
+        // we make this if there is the text side exist's then do all these given stuff other wise not
+        // like connect with chat or to make reply
+        if(getId){
+            var roomName = {{contactIdIs}}; // so here using this id user will contact with each other
+            var usr = `${{request.user.username}}`; // getting the username normally
+
+            //setting up the websocket
+            const chatSocket = new ReconnectingWebSocket(
+                'ws://'
+                + window.location.host
+                + '/ws/chat/'
+                + roomName
+                + '/'
+            );
+
+            // so in chatsocket if we get any message then it will set on the text are with new line
+            chatSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                var cont = document.getElementById('chat-log')
+                //document.querySelector('#chat-log').value += (data.message + '\n');
+                var getUser = "$" + data.message.userData.username;
+                const blockedVal = `${{ objblock }}`;
+
+                if (blockedVal === "$False"){
+                    if(getUser === usr){
+                        newMsgPlay.play();  // so here we play the sound when we send msg
+                        const newMsg = "<div class='d-flex justify-content-end mb-4'>" + 
+                                        "<div class='msg_cotainer_send'>" +
+                                            data.message.content + 
+                                            "<span class='msg_time_send mt-3'>" + new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: '2-digit'}).format(new Date(Date.parse(data.message.timestamp))) + "</span>" +
+                                        "</div>" +
+                                        "<div class='img_cont_msg'>" +
+                                            "<img src="+ data.message.userData.image +" class='rounded-circle user_img_msg'>" +
+                                        "</div>" +
+                                     "</div>" 
+
+                        const ogHtml = cont.innerHTML  
+                        cont.innerHTML = ogHtml + newMsg
+                    }else{
+                        notify.play(); // when we recieve the message this will play
+                        const newMsg = "<div class='d-flex justify-content-start mb-4'>" + 
+                                        "<div class='img_cont_msg'>" +
+                                            "<img src="+ data.message.userData.image +" class='rounded-circle user_img_msg'>" +
+                                        "</div>" +
+                                        "<div class='msg_cotainer'>" +
+                                            data.message.content + 
+                                            "<span class='msg_time mt-3'>" + new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: '2-digit'}).format(new Date(Date.parse(data.message.timestamp))) + "</span>" +
+                                        "</div>" +
+                                     "</div>" 
+
+                        const ogHtml = cont.innerHTML  
+                        cont.innerHTML = ogHtml + newMsg
+                    }
+                } 
+            };
+
+            // so onclose it will show the error
+            chatSocket.onclose = function(e) {
+                console.error('Chat socket closed unexpectedly');
+            };
+
+            // so here this is like index.html page where we focus on the  input and then if the enter key is pressed it will go to the onclick funciton
+            
+            document.querySelector('#chat-message-input').focus();
+            document.querySelector('#chat-message-input').onkeyup = function(e) {
+                if (e.keyCode === 13) {  // enter, return
+                    document.querySelector('#chat-message-submit').click();
+                }
+            };
+
+            
+            // so in on click it will send the message and set the input to empty 
+            document.querySelector('#chat-message-submit').onclick = function(e) {
+                const messageInputDom = document.querySelector('#chat-message-input');
+                const message = messageInputDom.value;
+                chatSocket.send(JSON.stringify({
+                    'message': message,
+                    'sendBy': usr,
+                    'contactId': roomName
+                }));
+                messageInputDom.value = '';
+            };
+        }
+    </script>
+
+{% endblock content %}

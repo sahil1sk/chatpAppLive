@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - 8000:8000
+    environment:
+      - SECRET_KEY=3-uhb%43l7gk4x_x%kv0%jtti4n&jm)94=+b31xghqd7=u3xhx
+      - gfile=ltpxhkngzinltcha 
